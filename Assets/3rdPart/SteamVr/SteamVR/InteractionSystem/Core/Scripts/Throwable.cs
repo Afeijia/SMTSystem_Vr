@@ -41,8 +41,11 @@ namespace Valve.VR.InteractionSystem
 		public bool restoreOriginalParent = false;
 
 
+        public bool able_throw = true;
 
-		protected VelocityEstimator velocityEstimator;
+
+
+        protected VelocityEstimator velocityEstimator;
         protected bool attached = false;
         protected float attachTime;
         protected Vector3 attachPosition;
@@ -87,7 +90,7 @@ namespace Valve.VR.InteractionSystem
         protected virtual void OnHandHoverBegin( Hand hand )
 		{
 			bool showHint = false;
-
+            if (!able_throw) return;
             // "Catch" the throwable by holding down the interaction button instead of pressing it.
             // Only do this if the throwable is moving faster than the prescribed threshold speed,
             // and if it isn't attached to another hand
@@ -124,6 +127,7 @@ namespace Valve.VR.InteractionSystem
         //-------------------------------------------------
         protected virtual void HandHoverUpdate( Hand hand )
         {
+            if (!able_throw) return;
             GrabTypes startingGrabType = hand.GetGrabStarting();
 
             if (startingGrabType != GrabTypes.None)
