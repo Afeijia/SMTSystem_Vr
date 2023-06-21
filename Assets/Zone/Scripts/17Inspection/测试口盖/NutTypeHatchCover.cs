@@ -61,6 +61,7 @@ public class NutTypeHatchCover : DeviceBase
         inPlaced = false;
         if (Hatch != null)
         {
+            Hatch.inUse = false;
             Hatch.hatchCover = null;
             Hatch = null;
         }

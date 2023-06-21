@@ -86,15 +86,17 @@ public class DeviceBase : MonoBehaviour
     //}
     public virtual void ProcedureStart()
     {
-        
+
     }
     public virtual void ProcedureEnd()
     {
-        
+
     }
 
-    protected virtual void SetInterable(bool  canMove)
+    protected virtual void SetInterable(bool canMove)
     {
         transform.GetComponent<Interactable>().enabled = canMove;
+        if (transform.GetComponent<Throwable>())
+            transform.GetComponent<Throwable>().able_throw = canMove;
     }
 }

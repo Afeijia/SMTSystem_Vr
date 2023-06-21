@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,9 +17,27 @@ public class PyrotechnicsWrench : DeviceBase
     /// <summary>
     /// 是否已附加火工品帽
     /// </summary>
-    public bool inUsed = true;
+    public bool inUsed = false;
+    /// <summary>
+    /// 是否已放置于火工品口
+    /// </summary>
+    public bool inPlaced = false;
 
     public bool inRelease = false;
+
+    /// <summary>
+    /// 保护帽放入工具位置
+    /// </summary>
+    public Transform hat_place;
+
+    /// <summary>
+    /// 火工品口
+    /// </summary>
+    public PyrotechnicsPort Port;
+
+    public PyrotechnicsSafelyHat Hat;
+
+    public Vector3 RotateAxis;
 
     public override void Start()
     {
@@ -30,6 +49,7 @@ public class PyrotechnicsWrench : DeviceBase
         base.OnAttachedToHand(hand);
         Debug.Log("拿在手中");
         inHand = true;
+        OnDetachedFromPort();
     }
 
     protected override void OnDetachedFromHand(Hand hand)
@@ -44,15 +64,92 @@ public class PyrotechnicsWrench : DeviceBase
     public void OnTriggerStay(Collider other)
     {
         if (!inRelease) return;
-        if (inUsed) return;
+        if (inPlaced) return;
 
-        PyrotechnicsSafelyHat hat = other.GetComponent<PyrotechnicsSafelyHat>();
-        if (hat == null || hat.inTool)
+        PyrotechnicsPort port = other.GetComponent<PyrotechnicsPort>();
+        if (port == null || port.hasTool)
         {
             return;
         }
 
-        inUsed = true;
-        hat.OnWrenchPlace(this);
+        if (port.OnWrenchPlace(this))
+        {
+            Port = port;
+            inPlaced = true;
+            SetInterable(false);
+
+            if (inUsed)
+            {
+                Tighten();
+            }
+            else
+            {
+                Relax();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 拧紧
+    /// </summary>
+    protected virtual void Tighten()
+    {
+        float time = 1f;
+
+        DOTween.To(() => time, x => time = x, 1, .5f).OnComplete(() =>
+        {
+            transform.DOLocalMove(Port.release_in_pos, 2).OnComplete(() =>
+            {
+                inPlaced = false;
+                Port.InstallHat(Hat);
+                Hat = null;
+                FinishOP();
+                SetInterable(true);
+            });
+            transform.DOLocalRotate(RotateAxis, 2, RotateMode.FastBeyond360);
+        });
+    }
+
+    /// <summary>
+    /// 拧松
+    /// </summary>
+    protected virtual void Relax()
+    {
+        float time = 1f;
+        DOTween.To(() => time, x => time = x, 1, .5f).OnComplete(() =>
+        {
+            transform.DOLocalMove(Port.tighten_in_pos, 2).OnComplete(() =>
+            {
+                inPlaced = false;
+                Hat = Port.UninstallHat();
+                Hat.transform.SetParent(hat_place);
+                Hat.transform.localPosition = Vector3.zero;
+                Hat.transform.localEulerAngles = Vector3.zero;
+                inUsed = true;
+
+                FinishOP();
+                SetInterable(true);
+            });
+            transform.DOLocalRotate(-RotateAxis, 2, RotateMode.FastBeyond360);
+        });
+    }
+
+    public void FinishOP()
+    {
+        OnDetachedFromPort();
+        transform.parent = null;
+    }
+
+    /// <summary>
+    /// 从火工品口拿下时 手动拿和拧动作完成后自动调用
+    /// </summary>
+    private void OnDetachedFromPort()
+    {
+        if (Port)
+        {
+            Port.hasTool = false;
+            Port = null;
+            inPlaced = false;
+        }
     }
 }

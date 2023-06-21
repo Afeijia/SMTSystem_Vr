@@ -23,7 +23,7 @@ public class PyrotechnicsSafelyHat : DeviceBase
     /// <summary>
     /// йг╥Яе║ки
     /// </summary>
-    public bool is_screw_off;//е║ки╨С©идц
+    public bool is_screw_off = false;//е║ки╨С©идц
 
     public Vector3 off_Pos;
     /// <summary>
