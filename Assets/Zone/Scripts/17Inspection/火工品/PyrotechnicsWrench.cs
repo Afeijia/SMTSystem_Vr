@@ -1,6 +1,7 @@
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using Valve.VR.InteractionSystem;
 
@@ -42,6 +43,7 @@ public class PyrotechnicsWrench : DeviceBase
     public override void Start()
     {
         base.Start();
+        ableTake = true;
     }
 
     protected override void OnAttachedToHand(Hand hand)
@@ -89,6 +91,11 @@ public class PyrotechnicsWrench : DeviceBase
         }
     }
 
+    void InFree()
+    {
+        inRelease = false;
+    }
+
     /// <summary>
     /// Å¡½ô
     /// </summary>
@@ -103,6 +110,7 @@ public class PyrotechnicsWrench : DeviceBase
                 inPlaced = false;
                 Port.InstallHat(Hat);
                 Hat = null;
+                inUsed = false;
                 FinishOP();
                 SetInterable(true);
             });
@@ -118,13 +126,17 @@ public class PyrotechnicsWrench : DeviceBase
         float time = 1f;
         DOTween.To(() => time, x => time = x, 1, .5f).OnComplete(() =>
         {
+            Hat = Port.UninstallHat();
+            Port.Hat = null;
+            Hat.wrenchTool = this;
+            Hat.transform.SetParent(hat_place);
+            Hat.transform.localPosition = Vector3.zero;
+            Hat.transform.localEulerAngles = Vector3.zero;
+
             transform.DOLocalMove(Port.tighten_in_pos, 2).OnComplete(() =>
             {
                 inPlaced = false;
-                Hat = Port.UninstallHat();
-                Hat.transform.SetParent(hat_place);
-                Hat.transform.localPosition = Vector3.zero;
-                Hat.transform.localEulerAngles = Vector3.zero;
+
                 inUsed = true;
 
                 FinishOP();

@@ -7,6 +7,17 @@ public enum DeviceState
     Release,
     Free
 }
+public enum DevType
+{
+    /// <summary>
+    /// 保护帽
+    /// </summary>
+    Protected,
+    /// <summary>
+    /// 设备
+    /// </summary>
+    Device
+}
 /// <summary>
 /// 设备基类
 /// </summary>

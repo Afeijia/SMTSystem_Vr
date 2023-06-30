@@ -16,7 +16,7 @@ public class PyrotechnicsSafelyHat : DeviceBase
     /// <summary>
     /// 是否已附加操作工具
     /// </summary>
-    public bool inTool = true;
+    public bool inTool = false;
 
     public bool inRelease = false;
 
@@ -24,12 +24,6 @@ public class PyrotechnicsSafelyHat : DeviceBase
     /// 是否拧松
     /// </summary>
     public bool is_screw_off = false;//拧松后可拿
-
-    public Vector3 off_Pos;
-    /// <summary>
-    /// 扳手吸附位置
-    /// </summary>
-    public Transform wrenchPlace;
 
     /// <summary>
     /// 正在使用的扳手工具
@@ -51,6 +45,7 @@ public class PyrotechnicsSafelyHat : DeviceBase
         if (wrenchTool)
         {
             wrenchTool.inUsed = false;
+            wrenchTool.Hat = null;
             wrenchTool = null;
         }
     }
@@ -68,30 +63,18 @@ public class PyrotechnicsSafelyHat : DeviceBase
     {
         if (!inRelease) return;
         PyrotechnicsWrench wrench = other.GetComponent<PyrotechnicsWrench>();
-        if (wrench == null || wrench.inUsed)
+        if (wrench == null || wrench.inUsed || !wrench.inHand)
         {
             return;
         }
+        wrenchTool = wrench;
+        wrenchTool.Hat = this;
+        wrenchTool.inUsed = true;
 
-
-
-        ////安装
-        //if (is_screw_off)
-        //{
-        //    if (inTool) return;
-        //    PyrotechnicsPort port = other.GetComponent<PyrotechnicsPort>();
-        //    if (port == null || port.inUsed)
-        //    {
-        //        return;
-        //    }
-        //}
-        ////卸下 
-        //else
-        //{
-
-        //}
-
-
+        inTool = true;
+        transform.SetParent(wrench.hat_place);
+        transform.localPosition = Vector3.zero;
+        transform.localEulerAngles = Vector3.zero;
     }
 
     void InFree()
@@ -99,12 +82,23 @@ public class PyrotechnicsSafelyHat : DeviceBase
         inRelease = false;
     }
 
-    public void OnWrenchPlace(PyrotechnicsWrench wrench)
+    /// <summary>
+    /// 使用工具安装至火工品口完成
+    /// </summary>
+    public void OnInstalled()
     {
-        wrenchTool = wrench;
-        wrench.transform.SetParent(wrenchPlace);
+        inTool = false;
+        is_screw_off = false;
+        SetInterable(false);
+    }
 
-        wrench.transform.localPosition = Vector3.zero;
-        wrench.transform.localEulerAngles = Vector3.zero;
+    /// <summary>
+    /// 使用工具从火工品口拆除开始
+    /// </summary>
+    public void OnUninstalled()
+    {
+        inTool = true;
+        is_screw_off = true;
+        SetInterable(true);
     }
 }

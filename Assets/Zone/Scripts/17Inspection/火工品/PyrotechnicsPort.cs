@@ -48,7 +48,7 @@ public class PyrotechnicsPort : MonoBehaviour
         if (inUsed == wrench.inUsed) { return false; }
 
         wrench.transform.SetParent(tool_place);
-        wrench.transform.localPosition = inUsed ? tighten_in_pos : release_in_pos;
+        wrench.transform.localPosition = inUsed ? release_in_pos : tighten_in_pos;
         wrench.transform.localEulerAngles = Vector3.zero;
 
         hasTool = true;
@@ -66,6 +66,7 @@ public class PyrotechnicsPort : MonoBehaviour
         hat.transform.SetParent(hat_place);
         hat.transform.localPosition = Vector3.zero;
         hat.transform.localEulerAngles = Vector3.zero;
+        Hat.OnInstalled();
 
         inUsed = true;
     }
@@ -77,6 +78,7 @@ public class PyrotechnicsPort : MonoBehaviour
     public PyrotechnicsSafelyHat UninstallHat()
     {
         inUsed = false;
+        Hat.OnUninstalled();
         return Hat;
     }
 }
